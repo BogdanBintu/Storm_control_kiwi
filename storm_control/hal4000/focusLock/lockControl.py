@@ -312,7 +312,8 @@ class LockControl(QtCore.QObject):
                     self.tiff_fp = tifffile.TiffWriter(film_settings.getBasename() + "_qpd.tif",
                                                        bigtiff = True)
 
-                self.offset_fp = open(film_settings.getBasename() + ".off", "w")
+                self.offset_file = film_settings.getBasename() + ".off"
+                self.offset_fp = open(self.offset_file, "w")
 
                 headers = ["frame", "offset", "power", "stage-z", "good-offset"]
                 if self.tiff_fp is not None:
@@ -347,7 +348,22 @@ class LockControl(QtCore.QObject):
             if self.offset_fp is not None:
                 self.offset_fp.close()
                 self.offset_fp = None
-                
+                ### test if stage failed BBEdit
+                lines = [ln for ln in open(self.offset_file, "r") if len(ln)>1]
+                last_stage = float(lines[-1].split(' ')[-2])
+                if last_stage<20:
+                    ###stage failed flag as error for dave to repeat the imaging
+                    print("BadStage")
+                    fl_Stage = r'C:\Data\errorStage.txt'
+                    fid = open(fl_Stage,'w')
+                    fid.write('True')
+                    fid.close()
+                else:
+                    print("GoodStage")
+                    fl_Stage = r'C:\Data\errorStage.txt'
+                    fid = open(fl_Stage,'w')
+                    fid.write('False')
+                    fid.close()
             if self.tiff_fp is not None:
                 self.tiff_counter = None
                 self.tiff_fp.close()

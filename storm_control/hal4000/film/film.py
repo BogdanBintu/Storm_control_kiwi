@@ -355,6 +355,13 @@ class Film(halModule.HalModule):
         self.writers_stopped_timer.setInterval(10)
         self.writers_stopped_timer.timeout.connect(self.stopFilmingLevel2)
 
+        self.daq_fl = r'C:\Data\errorDAQ2.txt' ###BBEdit
+        self.error_DAQ_timer = QtCore.QTimer(self) ###BBEdit
+        self.error_DAQ_timer.setSingleShot(True) ###BBEdit
+        self.error_DAQ_timer.setInterval(300000) ###BBEdit
+        self.error_DAQ_timer.timeout.connect(self.stopFilmingAll) ###BBEdit
+
+
         p = module_params.getp("parameters")
         p.add(params.ParameterStringDirectory("Current working directory",
                                               "directory",
@@ -670,7 +677,15 @@ class Film(halModule.HalModule):
         self.film_settings = film_settings
         self.film_state = "start"
         self.view.enableUI(False)
-
+        
+        fid = open(self.daq_fl,'w')###BBedit
+        fid.write("False")
+        fid.close()
+        
+        print("BB started film and marked no error")
+        
+        self.error_DAQ_timer.start()
+        
         self.stopCameras()
 
     def startFilmingLevel2(self):
@@ -726,7 +741,15 @@ class Film(halModule.HalModule):
                 self.sendMessage(halMessage.HalMessage(m_type = "stop camera",
                                                        data = {"camera" : camera.getCameraName()},
                                                        finalizer = self.handleStopCamera))
-
+    def stopFilmingAll(self):
+        """BB edit stopFilmingLevel1 because of very long timeout"""
+        if True:#self.DAQTimerOn:
+            self.stopFilmingLevel1()
+            #self.stopFilmingLevel2()
+            print("BB ErrorDAQ beacuse of timeout")
+            fid = open(self.daq_fl,'w')
+            fid.write("True")
+            fid.close()
     def stopFilmingLevel1(self):
         """
         Tell the cameras to stop, then wait until we get the
@@ -736,6 +759,10 @@ class Film(halModule.HalModule):
         # reference to the timing functionality. The actual cleanup of this
         # object is handled by timing.timing.
         #
+        try:
+            self.error_DAQ_timer.stop()
+        except:
+            print("Filed to stop BB DAQ timer")
         self.timing_functionality.newFrame.disconnect(self.handleNewFrame)
         self.timing_functionality.stopped.disconnect(self.stopFilmingLevel1)
         self.timing_functionality = None
