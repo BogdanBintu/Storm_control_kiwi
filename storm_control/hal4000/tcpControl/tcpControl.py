@@ -323,9 +323,11 @@ class TCPActionTakeMovie(TCPAction):
         #
         if message.isType("changing parameters"):
             if not message.getData()["changing"]:
+                #potentially add a while loop here to ensure correct repeat
+                # 
                 msg = halMessage.HalMessage(m_type = "start film request",
                                             data = {"request" : self.film_request})
-                self.actionMessage.emit(msg)
+                self.actionMessage.emit(msg)###############maybe modify here
 
         #
         # The 'film lockout' message with data 'locked out' is the signal

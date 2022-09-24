@@ -1,13 +1,11 @@
 #!/usr/bin/python
 # ----------------------------------------------------------------------------------------
-# A class to load and parse predefined pump commands. 
+# A class to load, parse, and control predefined valve commands, i.e predefined
+# changes to the port configurations of a valve chain. 
 # ----------------------------------------------------------------------------------------
 # Jeff Moffitt
-# 2/16/14
+# 12/28/13
 # jeffmoffitt@gmail.com
-#
-#
-# Updated 7/3/2019 by George Emanuel for syringe pump
 # ----------------------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------------------
@@ -19,18 +17,17 @@ import xml.etree.ElementTree as elementTree
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 # ----------------------------------------------------------------------------------------
-# PumpCommands Class Definition
+# ValveCommands Class Definition
 # ----------------------------------------------------------------------------------------
-class PumpCommands(QtWidgets.QMainWindow):
+class ValveCommands(QtWidgets.QMainWindow):
 
     # Define custom signal
     change_command_signal = QtCore.pyqtSignal(str)
     
     def __init__(self,
                  xml_file_path="default_config.xml",
-                 verbose = False,
-                 pumpType = 'peristaltic'):
-        super(PumpCommands, self).__init__()
+                 verbose = False):
+        super(ValveCommands, self).__init__()
 
         # Initialize internal attributes
         self.verbose = verbose
@@ -38,8 +35,7 @@ class PumpCommands(QtWidgets.QMainWindow):
         self.command_names = []
         self.commands = []
         self.num_commands = 0
-        self.num_pumps = 0
-        self.pumpType = pumpType
+        self.num_valves = 0
         
         # Create GUI
         self.createGUI()
@@ -51,14 +47,14 @@ class PumpCommands(QtWidgets.QMainWindow):
     # Create display and control widgets
     # ------------------------------------------------------------------------------------
     def close(self):
-        if self.verbose: print("Closing pump commands")
+        if self.verbose: print("Closing valve commands")
 
     # ------------------------------------------------------------------------------------
     # Create display and control widgets
     # ------------------------------------------------------------------------------------
     def createGUI(self):
         self.mainWidget = QtWidgets.QGroupBox()
-        self.mainWidget.setTitle("Pump Commands")
+        self.mainWidget.setTitle("Valve Commands")
         self.mainWidgetLayout = QtWidgets.QVBoxLayout(self.mainWidget)
 
         self.fileLabel = QtWidgets.QLabel()
@@ -128,12 +124,19 @@ class PumpCommands(QtWidgets.QMainWindow):
         return self.num_commands
 
     # ------------------------------------------------------------------------------------
+    # Return the number of valves in the defined commands:
+    #   could be different than in the chain
+    # ------------------------------------------------------------------------------------        
+    def getNumberOfValves(self):
+        return self.default_num_valves
+
+    # ------------------------------------------------------------------------------------
     # Load and parse a XML file with defined commands
     # ------------------------------------------------------------------------------------
     def loadCommands(self, xml_file_path = ""):
         # Set Configuration XML (load if needed)
         if not xml_file_path:
-            xml_file_path = QtGui.QFileDialog.getOpenFileName(self, "Open File", "\home")
+            xml_file_path = QtWidgets.QFileDialog.getOpenFileName(self, "Open File", "\home")[0]
             if not os.path.isfile(xml_file_path):
                 xml_file_path = "default_config.xml"
                 print("Not a valid path. Restoring: " + xml_file_path)
@@ -168,33 +171,26 @@ class PumpCommands(QtWidgets.QMainWindow):
         self.num_commands = 0
 
         # Load number of valves
-        self.num_pumps = int(self.kilroy_configuration.get("num_pumps"))
-        if not (self.num_pumps>0):
-            print("Number of pumps not specified")
+        self.num_valves = int(self.kilroy_configuration.get("num_valves"))
+        if not (self.num_valves>0):
+            print("Number of valves not specified")
         
         # Load commands
-        for pump_command in self.kilroy_configuration.findall("pump_commands"):
-            command_list = pump_command.findall("pump_cmd")
+        for valve_command in self.kilroy_configuration.findall("valve_commands"):
+            command_list = valve_command.findall("valve_cmd")
             for command in command_list:
-                if self.pumpType == 'peristaltic':
-                    for pump_config in command.findall("pump_config"):
-                        speed = float(pump_config.get("speed"))
-                        direction = pump_config.get("direction")
-                        if speed < 0.00 or speed > 48.0:
-                            speed = 0.0
-                            direction = "Stopped" # Flag for stopped flow
-                        direction = {"Forward": "Forward", "Reverse": "Reverse"}.get(direction, "Stopped")
+                new_command = [-1]*self.num_valves # make copy to initialize config with default
+                for valve_pos in command.findall("valve_pos"):
+                    valve_ID = int(valve_pos.get("valve_ID")) - 1
+                    port_ID = int(valve_pos.get("port_ID")) - 1
+                    if valve_ID < self.num_valves:
+                        new_command[valve_ID] = port_ID
+                    else:
+                        print("Valve out of range on command: " + command.get("name"))
 
-                    # Add command
-                    self.commands.append([direction, speed])
-                    self.command_names.append(command.get("name"))
-
-                elif self.pumpType == 'syringe':
-                    for pump_config in command.findall("pump_config"):
-                        position = int(pump_config.get('position'))
-                        speed = int(pump_config.get('speed'))
-                    self.commands.append([position, speed])
-                    self.command_names.append(command.get('name'))
+                # Add command
+                self.commands.append(new_command)
+                self.command_names.append(command.get("name"))
 
         # Record number of configs
         self.num_commands = len(self.command_names)
@@ -206,18 +202,13 @@ class PumpCommands(QtWidgets.QMainWindow):
         print("Current commands:")
         for command_ID in range(self.num_commands):
             print(self.command_names[command_ID])
-            if self.pumpType == 'peristaltic':
-                direction = self.commands[command_ID][0]
-                speed = self.commands[command_ID][1]
-                text_string = "    " + "Flow Direction: " + direction + "\n"
-                text_string += "    " + "Speed: " + str(speed) +"\n"
-                print(text_string)
-            elif self.pumpType == 'syringe':
-                position = self.commands[command_ID][0]
-                speed = self.commands[command_ID][1]
-                text_string = "    " + "Position: " + str(position) + "\n"
-                text_string += "    " + "Speed: " + str(speed) +"\n"
-                print(text_string)
+            for valve_ID in range(self.num_valves):
+                port_ID = self.commands[command_ID][valve_ID]
+                textString = "    " + "Valve " + str(valve_ID + 1)
+                if port_ID >= 0:
+                    textString += " configured to port " + str(port_ID+1)
+                else:
+                    textString += " configured to not change"
 
     # ------------------------------------------------------------------------------------
     # Update active command on GUI
@@ -249,12 +240,14 @@ class PumpCommands(QtWidgets.QMainWindow):
         current_command = self.commands[current_ID]
 
         text_string = current_command_name + "\n"
-        if self.pumpType == 'peristaltic':
-            text_string += "Flow Direction: " + current_command[0] + "\n"
-            text_string += "Flow Speed: " + str(current_command[1]) + "\n"
-        elif self.pumpType == 'syringe':
-            text_string += "Targe position: " + str(current_command[0]) + "\n"
-            text_string += "Speed: " + str(current_command[1]) + "\n"
+        for valve_ID, port_ID in enumerate(current_command):
+            text_string += "Valve " + str(valve_ID+1)
+            if port_ID == -1:
+                text_string += ": No Change "
+            else:
+                text_string += ": Port " + str(port_ID+1)
+            text_string += "\n"
+
         self.currentCommandLabel.setText(text_string)
 
     # ------------------------------------------------------------------------------------
@@ -281,7 +274,7 @@ class StandAlone(QtWidgets.QMainWindow):
         super(StandAlone, self).__init__(parent)
 
         # scroll area widget contents - layout
-        self.pump_commands = PumpCommands(verbose = True)
+        self.valve_chain_commands = ValveCommands(verbose = True)
         
         # main layout
 
@@ -290,13 +283,13 @@ class StandAlone(QtWidgets.QMainWindow):
         # central widget
         self.centralWidget = QtGui.QWidget()
         self.mainLayout = QtGui.QVBoxLayout(self.centralWidget)
-        self.mainLayout.addWidget(self.pump_commands.mainWidget)
+        self.mainLayout.addWidget(self.valve_chain_commands.mainWidget)
 
         # set central widget
         self.setCentralWidget(self.centralWidget)
 
         # set window title
-        self.setWindowTitle("Pump Commands")
+        self.setWindowTitle("Valve Chain Commands")
 
         # set window geometry
         self.setGeometry(50, 50, 500, 400)
@@ -310,13 +303,13 @@ class StandAlone(QtWidgets.QMainWindow):
         exit_action.triggered.connect(self.closeEvent)
 
         file_menu.addAction(exit_action)
-        file_menu.addAction(self.pump_commands.load_commands_action)
+        file_menu.addAction(self.valve_chain_commands.load_commands_action)
         
     # ------------------------------------------------------------------------------------
     # Detect close event
     # ------------------------------------------------------------------------------------    
     def closeEvent(self, event):
-        self.pump_commands.close()
+        self.valve_chain_commands.close()
         self.close()
 
 # ----------------------------------------------------------------------------------------

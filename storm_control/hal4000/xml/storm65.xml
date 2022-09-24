@@ -5,7 +5,7 @@
   <directory type="directory">C:/Data/</directory>
 
   <!-- The setup name -->
-  <setup_name type="string">STORM6_5</setup_name>
+  <setup_name type="string">KIWI</setup_name>
 
   <!-- The ui type, this is 'classic' or 'detached' -->
   <ui_type type="string">classic</ui_type>
@@ -393,8 +393,8 @@
 	</parameters>
 	<background type="int">0</background>
 	<camera_id type="int">1</camera_id>
-	<ini_file type="string">C:\Users\Lemon\STORM6p5-master\storm_control\hal4000\data\uc480_settings.ini</ini_file>
-	<offset_file type="string">C:\Users\Lemon\STORM6p5-master\storm_control\hal4000\data/cam_offsets_storm65.txt</offset_file>
+	<ini_file type="string">C:\Users\Kiwi\STORM6p5-master\storm_control\hal4000\data\uc480_settings.ini</ini_file>
+	<offset_file type="string">C:\Users\Kiwi\STORM6p5-master\storm_control\hal4000\data\cam_offsets_storm65.txt</offset_file>
 	<pixel_clock type="int">17</pixel_clock>
     <sigma type="float">3.0</sigma>
 	<uc480_dll type="string">c:/windows/system32/uc480_64.dll</uc480_dll>

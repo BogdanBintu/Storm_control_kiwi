@@ -36,9 +36,9 @@ class TitanValve(AbstractValve):
         self.write('P?')
         
         response = self.read()
-        #print("started")
-        #print(response)
-        #print(response.strip(string.ascii_letters))
+        print("started")
+        print(response)
+        print(response.strip(string.ascii_letters))
         
         if '!' in response:
             self.moving = True

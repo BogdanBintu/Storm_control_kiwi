@@ -24,7 +24,6 @@ class TitanValve(AbstractValve):
         #give the arduino time to initialize
         time.sleep(2)
         self.port_count = self.getPortCount()
-        time.sleep(0.5)
         self.updateValveStatus()
 
 
@@ -34,22 +33,13 @@ class TitanValve(AbstractValve):
 
     def updateValveStatus(self):
         self.write('P?')
-        
         response = self.read()
-        #print("started")
-        #print(response)
-        #print(response.strip(string.ascii_letters))
-        
         if '!' in response:
             self.moving = True
-            
         else:
             self.moving = False 
-            try:
-                self.current_position = int(response.strip(string.ascii_letters))#####failed
-            except:
-                self.current_position = -1
-            #print(self.current_position)
+            self.current_position = int(response.strip(string.ascii_letters))
+
         return self.current_position, self.moving
 
     '''
@@ -61,7 +51,7 @@ class TitanValve(AbstractValve):
             return False
 
         self.write('P ' + str(port_ID+1))
-        time.sleep(1)
+
     def howManyValves(self):
         return 1
 
@@ -88,7 +78,7 @@ class TitanValve(AbstractValve):
         return port_ID < self.port_count
 
     def write(self, message):
-        appendedMessage = message + '\n'
+        appendedMessage = message + '\r'
         self.serial.write(appendedMessage.encode())
 
     def read(self):

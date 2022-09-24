@@ -8,8 +8,6 @@
 # Jeff Moffitt
 # 2/15/14
 # jeffmoffitt@gmail.com
-#
-# Updated 7/2019 by George Emanuel
 # ----------------------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------------------
@@ -19,9 +17,9 @@ import sys
 import os
 import xml.etree.ElementTree as elementTree
 from PyQt5 import QtCore, QtGui, QtWidgets
-sys.path.append(r'C:\Users\Kiwi\Desktop\setup\STORM6p5-master\storm_control')
-from fluidics.valves.valveCommands import ValveCommands
-from fluidics.pumps.pumpCommands import PumpCommands
+from storm_control.fluidics.valves.valveCommands import ValveCommands
+from storm_control.fluidics.pumps.pumpCommands import PumpCommands
+
 # ----------------------------------------------------------------------------------------
 # KilroyProtocols Class Definition
 # ----------------------------------------------------------------------------------------
@@ -35,8 +33,7 @@ class KilroyProtocols(QtWidgets.QMainWindow):
     def __init__(self,
                  protocol_xml_path = "default_config.xml",
                  command_xml_path = "default_config.xml",
-                 verbose = False,
-                 pumpType='peristaltic'):
+                 verbose = False):
         super(KilroyProtocols, self).__init__()
 
         # Initialize internal attributes
@@ -50,7 +47,6 @@ class KilroyProtocols(QtWidgets.QMainWindow):
         self.status = [-1, -1] # Protocol ID, command ID within protocol
         self.issued_command = []
         self.received_message = None
-        self.pumpType = pumpType
 
         print("----------------------------------------------------------------------")
         
@@ -63,8 +59,7 @@ class KilroyProtocols(QtWidgets.QMainWindow):
 
         # Create instance of PumpCommands class
         self.pumpCommands = PumpCommands(xml_file_path = self.command_xml_path,
-                                         verbose = self.verbose,
-                                         pumpType = pumpType)
+                                         verbose = self.verbose)
 
         # Connect pump commands issue signal
         self.pumpCommands.change_command_signal.connect(self.issuePumpCommand)
