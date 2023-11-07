@@ -1,1 +1,1 @@
-cmd /K "path=C:\Users\Kiwi\Anaconda3\envs\testStorm;&&C:\Users\Kiwi\Anaconda3\Scripts\activate testStorm&&python ..\hal4000.py ..\xml\storm65.xml"
+cmd /K "path=C:\Users\Kiwi\Anaconda3\envs\testStorm;&&C:\Users\Kiwi\Anaconda3\Scripts\activate testStorm&&python C:\Users\Kiwi\Desktop\setup\STORM6p5-master\storm_control\hal4000\hal4000.py C:\Users\Kiwi\Desktop\setup\STORM6p5-master\storm_control\hal4000\xml\storm65.xml"

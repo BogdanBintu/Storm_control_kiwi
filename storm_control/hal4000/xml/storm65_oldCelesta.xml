@@ -293,7 +293,7 @@
       <class_name type="string">Celesta</class_name>
       <configuration>
     <ip type="string">192.168.201.200</ip>
-    <laser_id type="int">1</laser_id>
+    <laser_id type="int">2</laser_id>
     <used_during_filming type="boolean">True</used_during_filming>
       </configuration>
     </Lumencor488>
@@ -304,7 +304,7 @@
       <class_name type="string">Celesta</class_name>
       <configuration>
     <ip type="string">192.168.201.200</ip>
-    <laser_id type="int">2</laser_id>
+    <laser_id type="int">4</laser_id>
     <used_during_filming type="boolean">True</used_during_filming>
       </configuration>
     </Lumencor561>
@@ -315,7 +315,7 @@
       <class_name type="string">Celesta</class_name>
       <configuration>
     <ip type="string">192.168.201.200</ip>
-    <laser_id type="int">3</laser_id>
+    <laser_id type="int">5</laser_id>
     <used_during_filming type="boolean">True</used_during_filming>
       </configuration>
     </Lumencor647>
@@ -326,7 +326,7 @@
       <class_name type="string">Celesta</class_name>
       <configuration>
     <ip type="string">192.168.201.200</ip>
-    <laser_id type="int">4</laser_id>
+    <laser_id type="int">6</laser_id>
     <used_during_filming type="boolean">True</used_during_filming>
       </configuration>
     </Lumencor750> 

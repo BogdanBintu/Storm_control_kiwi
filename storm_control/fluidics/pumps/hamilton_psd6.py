@@ -108,7 +108,7 @@ class APump():
         commandString = '/1'
 
         if emptyFirst:
-            commandString += 'OV100A0'
+            commandString += 'OV300A0'
 
         if valvePosition is not None:
             if valvePosition == 'Input':
@@ -122,7 +122,7 @@ class APump():
         self.sendString(commandString + 'R\r')
 
     def emptySyringe(self):
-        self.sendString('/1OV100A0R\r')
+        self.sendString('/1OV300A0R\r')
 
     def stopSyringe(self):
         self.sendString('/1TR\r')
